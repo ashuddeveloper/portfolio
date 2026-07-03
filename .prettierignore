@@ -1,0 +1,7 @@
+.next
+out
+node_modules
+public/resume
+public/icons
+public/og.png
+package-lock.json
