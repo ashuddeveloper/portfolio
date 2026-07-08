@@ -2,11 +2,12 @@
 
 import { useRef } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { ArrowDownToLine, Terminal } from "lucide-react";
+import { ArrowDownToLine, Cpu, Orbit, Sparkles, Terminal } from "lucide-react";
 import { useLenis } from "lenis/react";
 
 import { person, rotatingRoles, stats } from "@/lib/resume";
@@ -14,6 +15,7 @@ import { GitHubIcon, LinkedInIcon } from "@/components/icons";
 import { withBasePath } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Counter } from "@/components/effects/counter";
+import { KONAMI_EVENT } from "@/components/effects/konami";
 import { Magnetic } from "@/components/effects/magnetic";
 import { Stagger, staggerChild } from "@/components/effects/reveal";
 import { Typewriter } from "@/components/effects/typewriter";
@@ -22,6 +24,12 @@ import { useScenePalette } from "@/components/three/scene-palette";
 import { useSound } from "@/hooks/use-sound";
 
 const HeroScene = dynamic(() => import("@/components/three/hero-scene"), { ssr: false });
+
+const telemetry = [
+  { label: "runtime", value: "agentic-ai" },
+  { label: "latency", value: "24ms" },
+  { label: "signal", value: "99.9%" },
+];
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -82,9 +90,10 @@ export function Hero() {
       ref={sectionRef}
       id="home"
       aria-label="Introduction"
-      className="relative flex min-h-svh flex-col overflow-clip"
+      className="hero-stage relative flex min-h-svh flex-col overflow-clip"
     >
       <div className="aurora-field" aria-hidden="true" />
+      <div className="hero-grid" aria-hidden="true" />
       <div ref={sceneWrapRef} className="absolute inset-0 will-change-transform">
         {/* offset so the orbital core sits clear of the copy: right on desktop, up on mobile */}
         <SceneShell
@@ -99,6 +108,20 @@ export function Hero() {
         aria-hidden="true"
         className="absolute inset-x-0 bottom-0 h-48 bg-linear-to-b from-transparent to-(--bg)"
       />
+      <div className="hero-hud pointer-events-none absolute inset-0 z-5" aria-hidden="true">
+        <div className="hero-hud-panel hero-hud-panel-a">
+          <Cpu className="size-4 text-(--ion)" />
+          <span>neural runtime</span>
+        </div>
+        <div className="hero-hud-panel hero-hud-panel-b">
+          <Orbit className="size-4 text-(--gold)" />
+          <span>orbit mesh</span>
+        </div>
+        <div className="hero-hud-panel hero-hud-panel-c">
+          <Sparkles className="size-4 text-(--cyan)" />
+          <span>play mode</span>
+        </div>
+      </div>
 
       <div className="relative z-10 shell flex flex-1 flex-col justify-center pt-32 pb-28 md:pt-36">
         <Stagger className="max-w-3xl">
@@ -110,7 +133,7 @@ export function Hero() {
           </motion.p>
 
           <motion.div variants={staggerChild} className="mt-5">
-            <span className="inline-flex items-center gap-2.5 rounded-full px-4 py-1.5 font-mono text-xs text-muted glass">
+            <span className="hero-status inline-flex items-center gap-2.5 px-4 py-1.5 font-mono text-xs text-muted glass">
               <span className="size-1.5 animate-pulse-dot rounded-full bg-operational" />
               <span>
                 <span className="text-operational">OPERATIONAL</span> — {person.title} @ UKG
@@ -120,7 +143,7 @@ export function Hero() {
 
           <motion.h1
             variants={staggerChild}
-            className="mt-7 font-display leading-[0.93] font-extrabold tracking-tight text-balance"
+            className="hero-title mt-7 font-display leading-[0.93] font-extrabold tracking-tight text-balance"
             style={{ fontSize: "clamp(3.1rem, 9.5vw, 7.25rem)" }}
           >
             <span className="block">{person.firstName}</span>
@@ -167,6 +190,28 @@ export function Hero() {
                 POST /contact
               </Button>
             </Magnetic>
+            <Magnetic>
+              <Button
+                variant="glass"
+                size="lg"
+                onClick={() => {
+                  play("click");
+                  window.dispatchEvent(new Event(KONAMI_EVENT));
+                }}
+                className="hero-warp-button font-mono"
+              >
+                <Sparkles className="size-4 text-(--cyan)" />
+                Warp scene
+              </Button>
+            </Magnetic>
+            <Magnetic>
+              <Button asChild variant="glass" size="lg" className="font-mono">
+                <Link href="/v2">
+                  <Sparkles className="size-4 text-(--cyan)" />
+                  View 2.0
+                </Link>
+              </Button>
+            </Magnetic>
             <div className="flex items-center gap-2.5">
               <Button asChild variant="glass" size="icon" aria-label="GitHub profile">
                 <a href={person.links.github} target="_blank" rel="noopener noreferrer">
@@ -179,6 +224,19 @@ export function Hero() {
                 </a>
               </Button>
             </div>
+          </motion.div>
+
+          <motion.div
+            variants={staggerChild}
+            className="hero-telemetry mt-7 grid max-w-xl grid-cols-3 gap-2.5"
+            aria-hidden="true"
+          >
+            {telemetry.map((item) => (
+              <div key={item.label} className="hero-telemetry-cell">
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </div>
+            ))}
           </motion.div>
 
           {/* Ops-strip statistics — every number is on the résumé */}

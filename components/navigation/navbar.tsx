@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Command as CommandIcon, Menu, Volume2, VolumeX, X } from "lucide-react";
 import { useLenis } from "lenis/react";
@@ -116,6 +117,9 @@ export function Navbar() {
 
           {/* controls */}
           <div className="flex items-center gap-1">
+            <Button asChild variant="ghost" size="sm" className="hidden font-mono sm:inline-flex">
+              <Link href="/v2">2.0</Link>
+            </Button>
             <Button
               variant="ghost"
               size="icon-sm"

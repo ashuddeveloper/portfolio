@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float } from "@react-three/drei";
+import { Float, Trail } from "@react-three/drei";
 
 import { PERF_BUDGET } from "@/hooks/use-perf-tier";
 import { seededRandom } from "@/lib/utils";
@@ -272,6 +272,203 @@ function OrbitalSystem({
   );
 }
 
+/* ------------------------------------------------------------------------ */
+/*  Holographic architecture                                                 */
+/* ------------------------------------------------------------------------ */
+
+function HologramLattice({
+  palette,
+  tier,
+  warp,
+}: {
+  palette: ScenePalette;
+  tier: "high" | "low";
+  warp: WarpRef;
+}) {
+  const groupRef = useRef<THREE.Group>(null);
+  const count = tier === "high" ? 11 : 7;
+  const instancedRef = useRef<THREE.InstancedMesh>(null);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const materialRef = useRef<THREE.MeshBasicMaterial>(null);
+
+  const cells = useMemo(() => {
+    const random = seededRandom(404);
+    return Array.from({ length: count * count }, (_, i) => {
+      const x = (i % count) - (count - 1) / 2;
+      const y = Math.floor(i / count) - (count - 1) / 2;
+      const radius = Math.hypot(x, y);
+      return {
+        x: x * 0.42,
+        y: y * 0.42,
+        z: Math.sin(radius * 1.2) * 0.16 + (random() - 0.5) * 0.12,
+        lift: random() * Math.PI * 2,
+        scale: 0.07 + random() * 0.055,
+      };
+    });
+  }, [count]);
+
+  useFrame((state, delta) => {
+    const group = groupRef.current;
+    const mesh = instancedRef.current;
+    if (!group || !mesh) return;
+    const speed = warpFactor(warp);
+    group.rotation.z += delta * 0.026 * speed;
+    group.rotation.x = -0.88 + state.pointer.y * 0.12;
+    group.rotation.y = state.pointer.x * 0.18;
+
+    cells.forEach((cell, i) => {
+      const pulse = 0.75 + Math.sin(state.clock.elapsedTime * 1.9 + cell.lift) * 0.25;
+      dummy.position.set(cell.x, cell.y, cell.z + pulse * 0.08);
+      dummy.rotation.set(
+        state.clock.elapsedTime * 0.18 + cell.lift,
+        state.clock.elapsedTime * 0.12,
+        cell.lift,
+      );
+      const s = cell.scale * pulse;
+      dummy.scale.set(s, s, s * 0.55);
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    if (materialRef.current) {
+      materialRef.current.opacity = palette.light ? 0.2 : 0.28;
+    }
+  });
+
+  return (
+    <group ref={groupRef} position={[0, -0.32, -0.55]} scale={[1.35, 1.35, 1.35]}>
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[2.86, 0.006, 5, 220]} />
+        <meshBasicMaterial
+          color={palette.cyan}
+          transparent
+          opacity={palette.light ? 0.22 : 0.18}
+          blending={palette.light ? THREE.NormalBlending : THREE.AdditiveBlending}
+        />
+      </mesh>
+      <instancedMesh ref={instancedRef} args={[undefined, undefined, cells.length]}>
+        <octahedronGeometry args={[1, 0]} />
+        <meshBasicMaterial
+          ref={materialRef}
+          color={palette.ion}
+          wireframe
+          transparent
+          opacity={0.24}
+          depthWrite={false}
+          blending={palette.light ? THREE.NormalBlending : THREE.AdditiveBlending}
+        />
+      </instancedMesh>
+    </group>
+  );
+}
+
+function EnergyRibbon({
+  palette,
+  tier,
+  warp,
+}: {
+  palette: ScenePalette;
+  tier: "high" | "low";
+  warp: WarpRef;
+}) {
+  const lineRef = useRef<THREE.LineSegments>(null);
+  const pointCount = tier === "high" ? 190 : 110;
+  const segmentCount = pointCount - 1;
+  const positions = useMemo(() => new Float32Array(segmentCount * 2 * 3), [segmentCount]);
+
+  useFrame((state) => {
+    const line = lineRef.current;
+    if (!line) return;
+    const time = state.clock.elapsedTime * (0.42 + warpFactor(warp) * 0.045);
+    const writePoint = (targetIndex: number, sourceIndex: number) => {
+      const t = sourceIndex / (pointCount - 1);
+      const angle = t * Math.PI * 2.35 + time;
+      const radius = 1.5 + Math.sin(t * Math.PI * 6 + time * 1.5) * 0.34;
+      positions[targetIndex] = Math.cos(angle) * radius;
+      positions[targetIndex + 1] = Math.sin(t * Math.PI * 2 + time * 0.7) * 0.62;
+      positions[targetIndex + 2] = Math.sin(angle) * radius * 0.72;
+    };
+    for (let i = 0; i < segmentCount; i++) {
+      writePoint(i * 6, i);
+      writePoint(i * 6 + 3, i + 1);
+    }
+    line.geometry.attributes.position.needsUpdate = true;
+  });
+
+  return (
+    <lineSegments ref={lineRef}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <lineBasicMaterial
+        color={palette.gold}
+        transparent
+        opacity={palette.light ? 0.32 : 0.42}
+        blending={palette.light ? THREE.NormalBlending : THREE.AdditiveBlending}
+      />
+    </lineSegments>
+  );
+}
+function PlayfulSatellites({
+  palette,
+  tier,
+  warp,
+  glow,
+}: {
+  palette: ScenePalette;
+  tier: "high" | "low";
+  warp: WarpRef;
+  glow: THREE.Texture;
+}) {
+  const count = tier === "high" ? 5 : 3;
+  const refs = useRef<(THREE.Sprite | null)[]>([]);
+
+  useFrame((state) => {
+    const speed = warpFactor(warp);
+    refs.current.forEach((sprite, i) => {
+      if (!sprite) return;
+      const phase = state.clock.elapsedTime * (0.32 + i * 0.035) * speed + i * 1.37;
+      const radius = 3.35 + Math.sin(phase * 1.7) * 0.28;
+      sprite.position.set(
+        Math.cos(phase) * radius,
+        Math.sin(phase * 0.8) * 1.15,
+        Math.sin(phase) * radius * 0.78,
+      );
+      const scale = 0.22 + Math.sin(phase * 2) * 0.04;
+      sprite.scale.set(scale, scale, 1);
+    });
+  });
+
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <Trail
+          key={i}
+          width={0.6}
+          length={tier === "high" ? 8 : 5}
+          color={i % 2 ? palette.cyan : palette.violet}
+          attenuation={(t) => t * t}
+        >
+          <sprite
+            ref={(el) => {
+              refs.current[i] = el;
+            }}
+          >
+            <spriteMaterial
+              map={glow}
+              color={i % 3 === 0 ? palette.ion : i % 3 === 1 ? palette.violet : palette.gold}
+              transparent
+              opacity={0.78}
+              depthWrite={false}
+              blending={palette.light ? THREE.NormalBlending : THREE.AdditiveBlending}
+            />
+          </sprite>
+        </Trail>
+      ))}
+    </>
+  );
+}
+
 /** One Points object that hugs the node meshes each frame — the halo layer. */
 function NodeGlows({
   nodeRefs,
@@ -503,6 +700,8 @@ function SceneContent({ palette, tier }: { palette: ScenePalette; tier: "high" |
       <fog attach="fog" args={[palette.bg, 8.5, 17]} />
       <CameraRig />
       <Starfield count={budget.stars} palette={palette} warp={warp} glow={glow} />
+      <HologramLattice palette={palette} tier={tier} warp={warp} />
+      <EnergyRibbon palette={palette} tier={tier} warp={warp} />
       <OrbitalSystem
         palette={palette}
         nodeCount={budget.orbitNodes}
@@ -510,6 +709,7 @@ function SceneContent({ palette, tier }: { palette: ScenePalette; tier: "high" |
         warp={warp}
         glow={glow}
       />
+      <PlayfulSatellites palette={palette} tier={tier} warp={warp} glow={glow} />
     </>
   );
 }
