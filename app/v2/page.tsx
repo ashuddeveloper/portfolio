@@ -927,7 +927,7 @@ export default function V2Page() {
     <div id="cs-root" style={{ position: "relative", width: "100%", background: "var(--bg)" }}>
       {/* Google fonts for Bricolage and Geist Mono */}
       <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Geist+Mono:wght@100..900&display=swap" rel="stylesheet" />
-      <link rel="stylesheet" href="/v2/css/mascot.css" />
+      <link rel="stylesheet" href={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/v2/css/mascot.css`} />
 
       {/* Preloader Screen */}
       <div id="cs-pre" style={{ position: "fixed", inset: 0, zIndex: 2147482790, background: "var(--bg)", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "clamp(64px,9vh,92px) 20px clamp(88px,13vh,130px)", color: "var(--ink)", fontFamily: "'Bricolage Grotesque',sans-serif" }}>

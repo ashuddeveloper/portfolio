@@ -413,10 +413,11 @@
   }
 
   function ensureStyleLink() {
-    if (document.querySelector('link[href="/mascot.css"]')) return;
+    var href = (window.__csBase || "") + "/mascot.css";
+    if (document.querySelector('link[href="' + href + '"]')) return;
     var link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/mascot.css";
+    link.href = href;
     document.head.appendChild(link);
   }
 
