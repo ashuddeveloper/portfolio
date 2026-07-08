@@ -611,7 +611,7 @@ export default function PlayPage() {
       </div>
       <div data-hud-ammo style={{ position: "absolute", bottom: 34, left: 0, right: 0, textAlign: "center" }} />
 
-      <a href="/v2/" style={{ position: "absolute", bottom: 28, left: 28, background: INK, color: BG, textDecoration: "none", fontWeight: 700, fontSize: 15, padding: "14px 24px", borderRadius: 100 }}>← Back to site</a>
+      <a href={(process.env.NEXT_PUBLIC_BASE_PATH || "") + "/v2/"} style={{ position: "absolute", bottom: 28, left: 28, background: INK, color: BG, textDecoration: "none", fontWeight: 700, fontSize: 15, padding: "14px 24px", borderRadius: 100 }}>← Back to site</a>
       <button data-menu-open style={{ position: "absolute", bottom: 28, right: 28, background: INK, color: BG, border: 0, fontWeight: 700, fontSize: 14, letterSpacing: ".12em", padding: "16px 26px", borderRadius: 100, cursor: "pointer", fontFamily: "inherit" }}>MENU</button>
 
       {/* game picker */}

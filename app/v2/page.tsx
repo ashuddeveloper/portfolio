@@ -118,13 +118,15 @@ export default function V2Page() {
     };
 
     // Sequential load of visual scripts
+    const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
+    (window as any).__csBase = BASE; // mascot.js uses this for /play links
     const loadScriptsAndInit = async () => {
       try {
-        await loadScript("/v2/js/lenis.js");
-        await loadScript("/v2/js/matter.js");
-        await loadScript("/v2/js/three.js");
-        await loadScript("/v2/js/organism.js");
-        await loadScript("/v2/js/mascot.js");
+        await loadScript(BASE + "/v2/js/lenis.js");
+        await loadScript(BASE + "/v2/js/matter.js");
+        await loadScript(BASE + "/v2/js/three.js");
+        await loadScript(BASE + "/v2/js/organism.js");
+        await loadScript(BASE + "/v2/js/mascot.js");
 
         if (!active) return;
 

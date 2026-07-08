@@ -4834,7 +4834,7 @@
         if (state.gate) return; // the gate owns the first start
         if (guide.running) { abortGuide(); return; }
         if (playChip.classList.contains("is-game")) {
-          window.location.href = "/play";
+          window.location.href = (window.__csBase || "") + "/play";
           return;
         }
         window.scrollTo(0, 0);
@@ -4843,7 +4843,7 @@
         runGuide();
         return;
       }
-      window.location.href = "/play";
+      window.location.href = (window.__csBase || "") + "/play";
     });
     // desktop reads "game ↗" from the start; mobile switches when the tour ends
     if (!window.matchMedia("(max-width: 640px)").matches) {
