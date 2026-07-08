@@ -1014,6 +1014,7 @@ export default function V2Page() {
         <div style={{ display: "flex", alignItems: "center", gap: "clamp(12px,2vw,30px)" }}>
           <a href="#work" style={{ textDecoration: "none", fontWeight: 600, fontSize: "15px", color: "var(--ink)" }}>Work</a>
           <a href="#faq" style={{ textDecoration: "none", fontWeight: 600, fontSize: "15px", color: "var(--ink)" }}>FAQ</a>
+          <a href={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/galaxy/`} style={{ textDecoration: "none", fontWeight: 600, fontSize: "15px", color: "var(--ink)" }}>Galaxy ↗</a>
           <a href={`mailto:${person.email}`} data-lead="" data-bouncy="" style={{ cursor: "none", textDecoration: "none", fontWeight: 700, fontSize: "15px", background: "var(--ink)", color: "var(--accent)", padding: "11px 20px", borderRadius: "100px", transition: "transform .4s cubic-bezier(.34,1.56,.64,1)" }}>Book a call →</a>
         </div>
       </nav>
