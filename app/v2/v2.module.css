@@ -276,6 +276,20 @@
   :global(#cs-htrack) {
     gap: 16px !important;
   }
+  /* svh keeps the sticky panels sized to the visible viewport when the
+     mobile browser chrome collapses/expands */
+  :global(#cs-phases [data-stack]) {
+    height: 100svh !important;
+  }
+  /* The 4:3 visual cards don't fit a one-column phone layout inside a
+     full-screen sticky panel — text content is the priority there */
+  :global(#cs-phases [data-stack] div[style*="aspect-ratio"]) {
+    display: none !important;
+  }
+  /* "Hover to preview" hint is meaningless on touch screens */
+  :global(#cs-selected > div > div:first-of-type > span) {
+    display: none !important;
+  }
 }
 
 @media (min-width: 761px) and (max-width: 860px), (min-width: 861px) and (max-width: 1024px) and (orientation: portrait) {
@@ -412,8 +426,16 @@
     max-width: min(330px, calc(100vw - 76px)) !important;
     transform: translateX(10px);
   }
-  :global([data-screen-label="Selected work"] h2 + span) {
+  :global(#cs-nav a[data-lead]) {
+    /* mascot.js injects a fixed bottom "Book a call" chip on phones */
     display: none !important;
+  }
+  :global(#cs-physics-box) {
+    height: 340px !important;
+  }
+  :global(#contact a[href^="mailto:"]) {
+    word-break: break-all;
+    max-width: 100%;
   }
 }
 

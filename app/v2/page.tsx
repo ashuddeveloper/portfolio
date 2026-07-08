@@ -602,6 +602,8 @@ export default function V2Page() {
         const i = parseInt(row.getAttribute("data-show") || "0", 10);
         const fill = row.querySelector("[data-fill]") as HTMLElement;
         const arrow = row.querySelector("[data-arrow]") as HTMLElement;
+        // Touch devices have no hover — tapping a row switches the preview
+        row.addEventListener("click", () => setActive(i));
         row.addEventListener("mouseenter", () => {
           if (fill) {
             fill.style.transformOrigin = "left center";
